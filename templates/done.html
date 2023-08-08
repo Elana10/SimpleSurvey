@@ -5,5 +5,8 @@
 {% block content %}
     <div>
         Thank you for completing our survey!
-    </form>
+    </div>
+    <p>
+        Your responses are: {{session['response']}}
+    </p>
 {% endblock %}

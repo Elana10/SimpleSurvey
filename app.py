@@ -1,4 +1,4 @@
-from flask import Flask, redirect, request, render_template, jsonify, flash
+from flask import Flask, redirect, request, render_template, jsonify, flash, session
 from flask_debugtoolbar import DebugToolbarExtension
 import surveys
 
@@ -13,11 +13,16 @@ survey = surveys.satisfaction_survey
 @app.route('/')
 def home_page():
     return render_template('home.html', title = survey.title, instructions = survey.instructions)
-
-@app.route('/questions/<number>')
+ 
+@app.route('/questions/<number>', methods = ['POST', 'GET'])
 def questions(number):
     number = int(number)
-    question_number = len(response)
+
+    if session.get('response'):
+        question_number = len(session['response'])
+    else:
+        question_number = 0
+    
     if number == question_number:
         big_question = survey.questions[number]
         question = big_question.question
@@ -31,12 +36,20 @@ def questions(number):
 
 @app.route('/answer', methods = ["POST"])
 def answer_collect():
+    
     number = request.form['number']
     answer = request.form[number]
-    response.append(answer)
+    # response.append(answer)
 
-    if len(survey.questions) > len(response):
-        next_question = len(response)
+    if session.get('response'):
+        response = session['response']
+        response.append(answer)
+        session['response'] = response
+    else: 
+        session['response'] = [answer]
+
+    if len(survey.questions) > len(session['response']):
+        next_question = len(session['response'])
         return redirect(f'/questions/{next_question}?')
 
     else: 
